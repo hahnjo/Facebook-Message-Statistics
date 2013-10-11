@@ -174,7 +174,7 @@ window.fbAsyncInit = function() {
 			
 			console.log("User is not yet logged in or has not authorized our request. Let him log in and authorize the app...");
 			
-			if (location.ancestorOrigins.length != 0 && location.ancestorOrigins[0].indexOf("facebook") != -1) {
+			if (parent !== window && document.referrer.indexOf("facebook") != -1) {
 				// the site is loaded by Facebook, so we can use the inline popup which is much nicer than the "real" popup
 				display = "async";
 			} else {
