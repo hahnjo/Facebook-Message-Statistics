@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Statistics for Facebook Messages</title>
+		<style type="text/css">
+/* Styles for the tablesorter */
+table.tablesorter {
+	font-family:arial;
+	background-color: #CDCDCD;
+	margin:10px 0pt 15px;
+	font-size: 8pt;
+	width: 100%;
+	text-align: left;
+}
+table.tablesorter thead tr th, table.tablesorter tfoot tr th {
+	background-color: #e6EEEE;
+	border: 1px solid #FFF;
+	font-size: 8pt;
+	padding: 4px;
+}
+table.tablesorter thead tr .header {
+	background-image: url(images/bg.gif);
+	background-repeat: no-repeat;
+	background-position: center right;
+	cursor: pointer;
+}
+table.tablesorter tbody td {
+	color: #3D3D3D;
+	padding: 4px;
+	background-color: #FFF;
+	vertical-align: top;
+}
+table.tablesorter tbody tr.odd td {
+	background-color:#F0F0F6;
+}
+table.tablesorter thead tr .headerSortUp {
+	background-image: url(images/asc.gif);
+}
+table.tablesorter thead tr .headerSortDown {
+	background-image: url(images/desc.gif);
+}
+table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
+background-color: #8dbdd8;
+}
+
+/* Our styles */
+a, a:visited {
+	color: #00F;
+}
+		</style>
+	</head>
+	<body>
+		<h1>Statistics for Facebook Messages</h1>
+		<table id="data" class="tablesorter">
+			<thead>
+				<tr>
+					<th>Title</th>
+					<th>Last message</th>
+					<th>Count</th>
+					<th>First message</th>
+					<th>Messages per day</th>
+				</tr>
+			</thead>
+			<tbody>
+				<!-- to be filled by JS -->
+			</tbody>
+		</table>
+		
+		<!-- needed for the Facebook-API -->
+		<div id="fb-root"></div>
+		
+		<!-- Scripts -->
+		<script src="//code.jquery.com/jquery-latest.min.js"></script>
+		<script>window.jQuery || document.write('<script src="jquery-1.10.2.min.js">\x3C/script>')</script>
+		<script src="jquery.tablesorter.min.js"></script>
+		
+		<script>
+// Functions
+$.fetchData = function() {
+	
+	console.log("Fetching data...");
+	
+	FB.api({
+		method:	"fql.query",
+		query:	"SELECT link, num_messages, thread_id, timestamp, title FROM unified_thread WHERE folder = 'inbox' ORDER BY timestamp DESC LIMIT 0,100000"
+	}, function(data) {
+		
+		var table = $("table#data");
+		var tableData = table.find("tbody");
+		$.each(data, function(index, item) {
+			
+			var date = new Date(parseInt(item.timestamp));
+			tableData.append("<tr id=\"thread-" + index + "\">"
+								 + "<td><a href=\"" + item.link + "\">" + item.title + "</a></td>"
+								 + "<td data-timestamp=\"" + item.timestamp + "\">" + date.toLocaleString() + "</td>"
+								 + "<td>" + item.num_messages + "</td>"
+								 + "<td></td>"
+								 + "<td></td>"
+							 + "</tr>");
+			
+			FB.api({
+				method:	"fql.query",
+				query:	"SELECT timestamp FROM unified_message WHERE thread_id = '" + item.thread_id + "' ORDER BY timestamp ASC LIMIT 0,1"
+			}, function(data) {
+				
+				// we only queried one message
+				data = data[0];
+				
+				// get the DOM-objects
+				var row = tableData.find("tr#thread-" + index);
+				var cells = row.find("td");
+				var countCell = $(cells[2]);
+				var startDateCell = $(cells[3]);
+				var messagesPerDayCell = $(cells[4]);
+				
+				// fetch, parse and display the data
+				var timestamp = parseInt(data.timestamp);
+				var startDate = new Date(timestamp);
+				startDateCell.data("timestamp", timestamp).html(startDate.toLocaleString());
+				
+				var now = new Date().getTime();
+				var days = (now - timestamp) / 1000 / 60 / 60 / 24;
+				
+				var count = countCell.html();
+				var messagesPerDay = count / days;
+				messagesPerDayCell.html(messagesPerDay.toFixed(2));
+				
+				// update the tablesorter
+				table.trigger("update");
+				
+			});
+			
+		});
+		
+		// update tablesorter and sort it
+		table.trigger("update");
+		// FIXME: that's not working for now. It only updates the header, but the messages are already sorted by the query, so the user doesn't see a difference.
+		// After that, the execution stops with "Uncaught TypeError: Cannot read property '1' of undefined".
+		table.trigger("sorton", [[[1, 1]]]);
+		
+	});
+	
+}
+
+// function that extracts the data from a table cell for sorting. Capable of handling our timestamps correctly
+var timestampTextExtraction = function(node) {
+	node = $(node);
+	
+	// if there is data-timestamp, return it
+	var data = node.data("timestamp");
+	if (data != undefined) {
+		return data;
+	}
+	
+	// return the text otherwise
+	return node.text();
+	
+}
+
+// Initialization
+window.fbAsyncInit = function() {
+	
+	FB.init({
+		appId: "449609528480957",
+		status: true
+	});
+	
+	FB.getLoginStatus(function(response) {
+		
+		if (response.status === "connected") {
+			console.log("User has already been logged in!");
+			$.fetchData();
+		} else {
+			
+			console.log("User is not yet logged in or has not authorized our request. Let him log in and authorize the app...");
+			
+			if (location.ancestorOrigins.length != 0 && location.ancestorOrigins[0].indexOf("facebook") != -1) {
+				// the site is loaded by Facebook, so we can use the inline popup which is much nicer than the "real" popup
+				display = "async";
+			} else {
+				display = "popup";
+			}
+			
+			FB.login(function(response) {
+				
+				if (response.authResponse) {
+					console.log("User has logged in...");
+					$.fetchData();
+				} else {
+					console.log("User cancelled login or did not fully authorize.");
+				}
+				
+			}, { scope: "read_mailbox", display: display });
+			
+		}
+		
+	});
+	
+	// for the timestamps, we need a different method to get the data relevant for sorting
+	$("#data").tablesorter({
+		textExtraction: timestampTextExtraction
+	});
+	
+};
+		</script>
+		<script src="//connect.facebook.net/de_DE/all.js"></script>
+	</body>
+</html>
