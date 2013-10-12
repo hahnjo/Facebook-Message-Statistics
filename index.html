@@ -57,12 +57,19 @@ html, body {
 a, a:visited {
 	color: #00F;
 }
+
+span#totalMessageCount {
+	font-weight: bold;
+}
 		</style>
 	</head>
 	<body>
 		<h1 data-translatable="true">Statistics for Facebook Messages</h1>
 		<p id="mustBeDeveloperError" style="display: none;" data-translatable="true">
 			We are sorry, but this app isn't working for you. We are relying a new API that Facebook has not made available publically yet :-(
+		</p>
+		<p>
+			<span data-translatable="true">All in all you wrote</span> <span id="totalMessageCount"></span> <span data-translatable="true">messages with your</span> <span id="totalFriendCount"></span> <span data-translatable="true">friends</span>.
 		</p>
 		<table id="data" class="tablesorter">
 			<thead>
@@ -109,6 +116,7 @@ $.fetchData = function() {
 			
 		}
 		
+		var totalMessageCount = 0;
 		var tableData = table.find("tbody");
 		$.each(data, function(index, item) {
 			
@@ -120,6 +128,8 @@ $.fetchData = function() {
 								 + "<td></td>"
 								 + "<td></td>"
 							 + "</tr>");
+			
+			totalMessageCount += parseInt(item.num_messages);
 			
 			FB.api({
 				method:	"fql.query",
@@ -155,11 +165,23 @@ $.fetchData = function() {
 			
 		});
 		
+		$("#totalMessageCount").text(totalMessageCount);
+		
 		// update tablesorter and sort it
 		table.trigger("update");
 		// FIXME: that's not working for now. It only updates the header, but the messages are already sorted by the query, so the user doesn't see a difference.
 		// After that, the execution stops with "Uncaught TypeError: Cannot read property '1' of undefined".
 		table.trigger("sorton", [[[1, 1]]]);
+		
+	});
+	
+	FB.api({
+		method:	"fql.query",
+		query:	"SELECT uid1 from friend WHERE uid2 = me()"
+	}, function(data) {
+		
+		var totalFriendCount = data.length;
+		$("#totalFriendCount").text(totalFriendCount);
 		
 	});
 	
