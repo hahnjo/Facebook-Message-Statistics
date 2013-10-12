@@ -54,6 +54,10 @@ html, body {
 	font-size: 1em;
 }
 
+#spinner {
+	text-align: center;
+}
+
 a, a:visited {
 	color: #00F;
 }
@@ -68,23 +72,28 @@ span#totalMessageCount {
 		<p id="mustBeDeveloperError" style="display: none;" data-translatable="true">
 			We are sorry, but this app isn't working for you. We are relying a new API that Facebook has not made available publically yet :-(
 		</p>
-		<p>
-			<span data-translatable="true">All in all you wrote</span> <span id="totalMessageCount"></span> <span data-translatable="true">messages with your</span> <span id="totalFriendCount"></span> <span data-translatable="true">friends</span>.
-		</p>
-		<table id="data" class="tablesorter">
-			<thead>
-				<tr>
-					<th data-translatable="true">Title</th>
-					<th data-translatable="true">Last message</th>
-					<th data-translatable="true">Count</th>
-					<th data-translatable="true">First message</th>
-					<th data-translatable="true">Messages per day</th>
-				</tr>
-			</thead>
-			<tbody>
-				<!-- to be filled by JS -->
-			</tbody>
-		</table>
+		<div id="spinner">
+			<img src="images/ajax-loader.gif">
+		</div>
+		<div id="wrapper" style="display:none;">
+			<p>
+				<span data-translatable="true">All in all you wrote</span> <span id="totalMessageCount"></span> <span data-translatable="true">messages with your</span> <span id="totalFriendCount"></span> <span data-translatable="true">friends</span>.
+			</p>
+			<table id="data" class="tablesorter">
+				<thead>
+					<tr>
+						<th data-translatable="true">Title</th>
+						<th data-translatable="true">Last message</th>
+						<th data-translatable="true">Count</th>
+						<th data-translatable="true">First message</th>
+						<th data-translatable="true">Messages per day</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!-- to be filled by JS -->
+				</tbody>
+			</table>
+		</div>
 		
 		<!-- needed for the Facebook-API -->
 		<div id="fb-root"></div>
@@ -166,6 +175,9 @@ $.fetchData = function() {
 		});
 		
 		$("#totalMessageCount").text(totalMessageCount);
+		
+		$("#spinner").hide();
+		$("#wrapper").show();
 		
 		// update tablesorter and sort it
 		table.trigger("update");
