@@ -51,6 +51,9 @@ a, a:visited {
 	</head>
 	<body>
 		<h1>Statistics for Facebook Messages</h1>
+		<p id="mustBeDeveloperError" style="display: none;">
+			We are sorry, but this app isn't working for you. We are relying a new API that Facebook has not made available publically yet :-(
+		</p>
 		<table id="data" class="tablesorter">
 			<thead>
 				<tr>
@@ -86,6 +89,16 @@ $.fetchData = function() {
 	}, function(data) {
 		
 		var table = $("table#data");
+		
+		if ("error_code" in data && data.error_code == 298) {
+			// "You must be a developer of the application"
+			
+			table.hide();
+			$("#mustBeDeveloperError").show();
+			return;
+			
+		}
+		
 		var tableData = table.find("tbody");
 		$.each(data, function(index, item) {
 			
