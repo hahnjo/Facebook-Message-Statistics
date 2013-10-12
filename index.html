@@ -3,6 +3,9 @@
 	<head>
 		<title>Statistics for Facebook Messages</title>
 		<style type="text/css">
+
+
+		
 /* Styles for the tablesorter */
 table.tablesorter {
 	font-family:arial;
@@ -43,29 +46,54 @@ table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSo
 background-color: #8dbdd8;
 }
 
+/* Our table styles */
+table.tablesorter .num_messages {
+	font-weight:bold;
+}
+
 /* Our styles */
+html, body {
+	font-family: Helvetica, sans-sarif;
+	font-size: 1em;
+}
+
+#spinner {
+	text-align: center;
+}
+
 a, a:visited {
 	color: #00F;
+}
+
+span#fb-account-all-messages {
+	font-weight: bold;
 }
 		</style>
 	</head>
 	<body>
-		<h1>Statistics for Facebook Messages</h1>
-		<table id="data" class="tablesorter">
-			<thead>
-				<tr>
-					<th>Title</th>
-					<th>Last message</th>
-					<th>Count</th>
-					<th>First message</th>
-					<th>Messages per day</th>
-				</tr>
-			</thead>
-			<tbody>
-				<!-- to be filled by JS -->
-			</tbody>
-		</table>
-		
+		<h1 id="title">Statistics for Facebook Messages</h1>
+		<div id="spinner">
+			<img src="images/ajax-loader.gif">
+		</div>
+		<div id="wrapper" style="display:none;">
+			<p id="introduction-text">
+				All in all you wrote <span id="fb-account-all-messages"></span> messages with your <span id="fb-account-num-friends"></span> friends.
+			</p>
+			<table id="data" class="tablesorter">
+				<thead>
+					<tr>
+						<th>Title</th>
+						<th>Last message</th>
+						<th>Count</th>
+						<th>First message</th>
+						<th>Messages per day</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!-- to be filled by JS -->
+				</tbody>
+			</table>
+		</div>
 		<!-- needed for the Facebook-API -->
 		<div id="fb-root"></div>
 		
@@ -80,6 +108,10 @@ $.fetchData = function() {
 	
 	console.log("Fetching data...");
 	
+	
+	var all_messages = 0;
+	var num_friends = 0;
+	
 	FB.api({
 		method:	"fql.query",
 		query:	"SELECT link, num_messages, thread_id, timestamp, title FROM unified_thread WHERE folder = 'inbox' ORDER BY timestamp DESC LIMIT 0,100000"
@@ -87,16 +119,20 @@ $.fetchData = function() {
 		
 		var table = $("table#data");
 		var tableData = table.find("tbody");
+		
+		
 		$.each(data, function(index, item) {
 			
 			var date = new Date(parseInt(item.timestamp));
 			tableData.append("<tr id=\"thread-" + index + "\">"
-								 + "<td><a href=\"" + item.link + "\">" + item.title + "</a></td>"
-								 + "<td data-timestamp=\"" + item.timestamp + "\">" + date.toLocaleString() + "</td>"
-								 + "<td>" + item.num_messages + "</td>"
-								 + "<td></td>"
-								 + "<td></td>"
+								 + "<td class='title'><a href=\"" + item.link + "\">" + item.title + "</a></td>"
+								 + "<td class='timestamp' data-timestamp=\"" + item.timestamp + "\">" + date.toLocaleString() + "</td>"
+								 + "<td class='num_messages'>" + item.num_messages + "</td>"
+								 + "<td class='first_message'></td>"
+								 + "<td class='messages_per_day'></td>"
 							 + "</tr>");
+			
+			all_messages += parseInt(item.num_messages);
 			
 			FB.api({
 				method:	"fql.query",
@@ -132,6 +168,21 @@ $.fetchData = function() {
 			
 		});
 		
+		$("#fb-account-all-messages").text(all_messages);
+		
+		FB.api({
+			method:	"fql.query",
+			query:	"SELECT uid1 from friend WHERE uid2 = me()"
+		}, function(data) {
+			console.log(data);
+			var num_friends = data.length;
+			$("#fb-account-num-friends").text(num_friends);
+			
+			$("#spinner").hide();
+			$("#wrapper").show();
+		});
+		
+		
 		// update tablesorter and sort it
 		table.trigger("update");
 		// FIXME: that's not working for now. It only updates the header, but the messages are already sorted by the query, so the user doesn't see a difference.
@@ -140,7 +191,7 @@ $.fetchData = function() {
 		
 	});
 	
-}
+};
 
 // function that extracts the data from a table cell for sorting. Capable of handling our timestamps correctly
 var timestampTextExtraction = function(node) {
@@ -155,7 +206,7 @@ var timestampTextExtraction = function(node) {
 	// return the text otherwise
 	return node.text();
 	
-}
+};
 
 // Initialization
 window.fbAsyncInit = function() {
