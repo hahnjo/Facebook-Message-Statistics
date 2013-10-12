@@ -60,6 +60,10 @@ html, body {
 a, a:visited {
 	color: #00F;
 }
+
+span#fb-account-all-messages {
+	font-weight: bold;
+}
 		</style>
 	</head>
 	<body>
@@ -79,6 +83,9 @@ a, a:visited {
 			</tbody>
 		</table>
 		
+			<p id="introduction-text">
+				All in all you wrote <span id="fb-account-all-messages"></span> messages with your <span id="fb-account-num-friends"></span> friends.
+			</p>
 		<!-- needed for the Facebook-API -->
 		<div id="fb-root"></div>
 		
@@ -93,6 +100,10 @@ $.fetchData = function() {
 	
 	console.log("Fetching data...");
 	
+	
+	var all_messages = 0;
+	var num_friends = 0;
+	
 	FB.api({
 		method:	"fql.query",
 		query:	"SELECT link, num_messages, thread_id, timestamp, title FROM unified_thread WHERE folder = 'inbox' ORDER BY timestamp DESC LIMIT 0,100000"
@@ -100,6 +111,8 @@ $.fetchData = function() {
 		
 		var table = $("table#data");
 		var tableData = table.find("tbody");
+		
+		
 		$.each(data, function(index, item) {
 			
 			var date = new Date(parseInt(item.timestamp));
@@ -110,6 +123,8 @@ $.fetchData = function() {
 								 + "<td class='first_message'></td>"
 								 + "<td class='messages_per_day'></td>"
 							 + "</tr>");
+			
+			all_messages += parseInt(item.num_messages);
 			
 			FB.api({
 				method:	"fql.query",
@@ -145,6 +160,19 @@ $.fetchData = function() {
 			
 		});
 		
+		$("#fb-account-all-messages").text(all_messages);
+		
+		FB.api({
+			method:	"fql.query",
+			query:	"SELECT uid1 from friend WHERE uid2 = me()"
+		}, function(data) {
+			console.log(data);
+			var num_friends = data.length;
+			$("#fb-account-num-friends").text(num_friends);
+			
+		});
+		
+		
 		// update tablesorter and sort it
 		table.trigger("update");
 		// FIXME: that's not working for now. It only updates the header, but the messages are already sorted by the query, so the user doesn't see a difference.
@@ -153,7 +181,7 @@ $.fetchData = function() {
 		
 	});
 	
-}
+};
 
 // function that extracts the data from a table cell for sorting. Capable of handling our timestamps correctly
 var timestampTextExtraction = function(node) {
@@ -168,7 +196,7 @@ var timestampTextExtraction = function(node) {
 	// return the text otherwise
 	return node.text();
 	
-}
+};
 
 // Initialization
 window.fbAsyncInit = function() {
