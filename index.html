@@ -3,6 +3,9 @@
 	<head>
 		<title>Statistics for Facebook Messages</title>
 		<style type="text/css">
+
+
+		
 /* Styles for the tablesorter */
 table.tablesorter {
 	font-family:arial;
@@ -43,14 +46,24 @@ table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSo
 background-color: #8dbdd8;
 }
 
+/* Our table styles */
+table.tablesorter .num_messages {
+	font-weight:bold;
+}
+
 /* Our styles */
+html, body {
+	font-family: Helvetica, sans-sarif;
+	font-size: 1em;
+}
+
 a, a:visited {
 	color: #00F;
 }
 		</style>
 	</head>
 	<body>
-		<h1>Statistics for Facebook Messages</h1>
+		<h1 id="title">Statistics for Facebook Messages</h1>
 		<table id="data" class="tablesorter">
 			<thead>
 				<tr>
@@ -91,11 +104,11 @@ $.fetchData = function() {
 			
 			var date = new Date(parseInt(item.timestamp));
 			tableData.append("<tr id=\"thread-" + index + "\">"
-								 + "<td><a href=\"" + item.link + "\">" + item.title + "</a></td>"
-								 + "<td data-timestamp=\"" + item.timestamp + "\">" + date.toLocaleString() + "</td>"
-								 + "<td>" + item.num_messages + "</td>"
-								 + "<td></td>"
-								 + "<td></td>"
+								 + "<td class='title'><a href=\"" + item.link + "\">" + item.title + "</a></td>"
+								 + "<td class='timestamp' data-timestamp=\"" + item.timestamp + "\">" + date.toLocaleString() + "</td>"
+								 + "<td class='num_messages'>" + item.num_messages + "</td>"
+								 + "<td class='first_message'></td>"
+								 + "<td class='messages_per_day'></td>"
 							 + "</tr>");
 			
 			FB.api({
