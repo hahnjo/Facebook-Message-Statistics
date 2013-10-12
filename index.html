@@ -57,6 +57,10 @@ html, body {
 	font-size: 1em;
 }
 
+#spinner {
+	text-align: center;
+}
+
 a, a:visited {
 	color: #00F;
 }
@@ -68,24 +72,28 @@ span#fb-account-all-messages {
 	</head>
 	<body>
 		<h1 id="title">Statistics for Facebook Messages</h1>
-		<table id="data" class="tablesorter">
-			<thead>
-				<tr>
-					<th>Title</th>
-					<th>Last message</th>
-					<th>Count</th>
-					<th>First message</th>
-					<th>Messages per day</th>
-				</tr>
-			</thead>
-			<tbody>
-				<!-- to be filled by JS -->
-			</tbody>
-		</table>
-		
+		<div id="spinner">
+			<img src="images/ajax-loader.gif">
+		</div>
+		<div id="wrapper" style="display:none;">
 			<p id="introduction-text">
 				All in all you wrote <span id="fb-account-all-messages"></span> messages with your <span id="fb-account-num-friends"></span> friends.
 			</p>
+			<table id="data" class="tablesorter">
+				<thead>
+					<tr>
+						<th>Title</th>
+						<th>Last message</th>
+						<th>Count</th>
+						<th>First message</th>
+						<th>Messages per day</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!-- to be filled by JS -->
+				</tbody>
+			</table>
+		</div>
 		<!-- needed for the Facebook-API -->
 		<div id="fb-root"></div>
 		
@@ -170,6 +178,8 @@ $.fetchData = function() {
 			var num_friends = data.length;
 			$("#fb-account-num-friends").text(num_friends);
 			
+			$("#spinner").hide();
+			$("#wrapper").show();
 		});
 		
 		
