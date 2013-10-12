@@ -43,7 +43,17 @@ table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSo
 background-color: #8dbdd8;
 }
 
+/* Our table styles */
+table.tablesorter .num_messages {
+	font-weight:bold;
+}
+
 /* Our styles */
+html, body {
+	font-family: Helvetica, sans-sarif;
+	font-size: 1em;
+}
+
 a, a:visited {
 	color: #00F;
 }
@@ -106,7 +116,7 @@ $.fetchData = function() {
 			tableData.append("<tr id=\"thread-" + index + "\">"
 								 + "<td><a href=\"" + item.link + "\">" + item.title + "</a></td>"
 								 + "<td data-timestamp=\"" + item.timestamp + "\">" + date.toLocaleString() + "</td>"
-								 + "<td>" + item.num_messages + "</td>"
+								 + "<td class=\"num_messages\">" + item.num_messages + "</td>"
 								 + "<td></td>"
 								 + "<td></td>"
 							 + "</tr>");
