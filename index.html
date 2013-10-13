@@ -186,6 +186,30 @@ $.translate = function() {
 	
 }
 
+/**
+ * Creates the template for a new translation and logs it to the console
+ */
+$.newTranslation = function() {
+	
+	var newl10n = {};
+	$("*[data-translatable=true]").text(function(index, text) {
+		text = text.trim();
+		newl10n[text] = text;
+	});
+	
+	var file = "// http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes\n"
+			+ "var htmlLang = \"\";\n"
+			+ "var l10n = {\n";
+	
+	$.each(newl10n, function(key, value) {
+		file += "\t\"" + key + "\": \"" + value + "\",\n";
+	});
+	
+	file += "};";
+	console.log(file);
+	
+}
+
 // function that extracts the data from a table cell for sorting. Capable of handling our timestamps correctly
 var timestampTextExtraction = function(node) {
 	node = $(node);
