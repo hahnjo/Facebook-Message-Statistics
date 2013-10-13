@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
-		<title>Statistics for Facebook Messages</title>
+		<title data-translatable="true">Statistics for Facebook Messages</title>
 		<style type="text/css">
 /* Styles for the tablesorter */
 table.tablesorter {
@@ -50,18 +50,18 @@ a, a:visited {
 		</style>
 	</head>
 	<body>
-		<h1>Statistics for Facebook Messages</h1>
-		<p id="mustBeDeveloperError" style="display: none;">
+		<h1 data-translatable="true">Statistics for Facebook Messages</h1>
+		<p id="mustBeDeveloperError" style="display: none;" data-translatable="true">
 			We are sorry, but this app isn't working for you. We are relying a new API that Facebook has not made available publically yet :-(
 		</p>
 		<table id="data" class="tablesorter">
 			<thead>
 				<tr>
-					<th>Title</th>
-					<th>Last message</th>
-					<th>Count</th>
-					<th>First message</th>
-					<th>Messages per day</th>
+					<th data-translatable="true">Title</th>
+					<th data-translatable="true">Last message</th>
+					<th data-translatable="true">Count</th>
+					<th data-translatable="true">First message</th>
+					<th data-translatable="true">Messages per day</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -213,6 +213,7 @@ window.fbAsyncInit = function() {
 		
 		if (response.status === "connected") {
 			console.log("User has already been logged in!");
+			$.translate();
 			$.fetchData();
 		} else {
 			
@@ -229,6 +230,7 @@ window.fbAsyncInit = function() {
 				
 				if (response.authResponse) {
 					console.log("User has logged in...");
+					$.translate();
 					$.fetchData();
 				} else {
 					console.log("User cancelled login or did not fully authorize.");
