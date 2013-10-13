@@ -155,6 +155,37 @@ $.fetchData = function() {
 	
 }
 
+/**
+ * Query the user's locale and translate the document
+ */
+$.translate = function() {
+	
+	FB.api({
+		method:	"fql.query",
+		query:	"SELECT locale FROM user WHERE uid = me()"
+	}, function(data) {
+		
+		var locale = data[0].locale;
+		$.getScript("l10n/" + locale + ".js", function() {
+			
+			// Do the work when the script is successfully loaded
+			$("html").attr("lang", htmlLang);
+			$("*[data-translatable=true]").text(function(index, text) {
+				
+				text = text.trim();
+				if (text in l10n) {
+					return l10n[text];
+				}
+				return text;
+				
+			});
+			
+		});
+		
+	});
+	
+}
+
 // function that extracts the data from a table cell for sorting. Capable of handling our timestamps correctly
 var timestampTextExtraction = function(node) {
 	node = $(node);
